@@ -52,9 +52,9 @@ class MainController extends Controller
         $token = $tokenResult->token;
 
         if($request->remember_me){
-            $token->expires_at = Carbon::now('Asia/Jakarta')->addWeeks(2);
+            $token->expires_at = Carbon::now()->addWeeks(1);
         }else{
-            $token->expires_at =Carbon::now('Asia/Jakarta')->addHours(1);
+            $token->expires_at =Carbon::now()->addHours(1);
         }
 
         $token->save();
@@ -77,12 +77,28 @@ class MainController extends Controller
         // $user = Auth::user()->token();
         
         // $user->revoke();
-        $user = $request->user();
-        dd($request);
-        $request->user()->token()->revoke();
-        return response()->json([
-            'message'   =>  'Terima Kasih telah bertransaksi dengan Kami.Sampai Jumpa di transaksi berikutnya'
-        ],200);
+        // $user = $request->user();
+        $user = auth()->guard('api')->user();
+        // dd($user);
+        
+        if($user){
+            $user->token()->revoke();
+            return response()->json([
+                'message'   =>  'Terima Kasih telah bertransaksi dengan Kami.Sampai Jumpa di transaksi berikutnya'
+            ],200);
+        } else {
+            return response()->json([
+                'status'    =>  'fail',
+                'message'   =>  'Token anda tidak valid, mohon login kembali.'
+            ],200);
+        }
+        
+    }
+
+    public function profile(Request $request)
+    {
+        $user = auth()->guard('api')->user();
+        return response()->json($user);
     }
 
     
